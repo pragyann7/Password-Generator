@@ -39,7 +39,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>3</number>
     </property>
     <widget class="QWidget" name="page_generate">
      <widget class="QLabel" name="Title">
@@ -283,6 +283,88 @@ padding: 6px 12px</string>
       </property>
      </widget>
     </widget>
+    <widget class="QWidget" name="page_setting">
+     <widget class="QLabel" name="label">
+      <property name="geometry">
+       <rect>
+        <x>140</x>
+        <y>30</y>
+        <width>104</width>
+        <height>33</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Georgia</family>
+        <pointsize>29</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Settings</string>
+      </property>
+     </widget>
+     <widget class="QWidget" name="">
+      <property name="geometry">
+       <rect>
+        <x>70</x>
+        <y>120</y>
+        <width>251</width>
+        <height>221</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QPushButton" name="cmpBtn">
+         <property name="text">
+          <string>Change Master Password</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="themebtn">
+         <property name="text">
+          <string>Theme</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="exportpassBtn">
+         <property name="text">
+          <string>Export Passwords</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="filelocationBtn">
+         <property name="text">
+          <string>File Location</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="page_about">
+     <widget class="QLabel" name="label_2">
+      <property name="geometry">
+       <rect>
+        <x>150</x>
+        <y>40</y>
+        <width>78</width>
+        <height>33</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Georgia</family>
+        <pointsize>29</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>About</string>
+      </property>
+     </widget>
+    </widget>
     <widget class="QWidget" name="page_saved">
      <widget class="QTableWidget" name="passwordTable">
       <property name="geometry">
@@ -290,7 +372,7 @@ padding: 6px 12px</string>
         <x>0</x>
         <y>0</y>
         <width>391</width>
-        <height>501</height>
+        <height>444</height>
        </rect>
       </property>
       <property name="showGrid">
@@ -316,6 +398,7 @@ padding: 6px 12px</string>
     </widget>
    </widget>
   </widget>
+  <widget class="QStatusBar" name="statusBar"/>
   <action name="actionsgajfg">
    <property name="text">
     <string>sgajfg</string>

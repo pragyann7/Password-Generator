@@ -22,18 +22,22 @@ MainWindow::MainWindow(QWidget *parent)
     ui->errorLabel->hide();
     ui->stackedWidget->setCurrentWidget(ui->page_generate);
 
+    QLabel *versionLabel = new QLabel("Version 1.0.0", this);
+        QFont font = versionLabel->font();
+    font.setPointSize(12);
+    versionLabel->setFont(font);
+
+    statusBar()->addPermanentWidget(versionLabel);
+
+
     ui->passwordTable->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-
-
-//    ui->passwordTable->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
-//    ui->passwordTable->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    ui->passwordTable->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
     ui->passwordTable->setSelectionMode(QAbstractItemView::NoSelection);
     ui->passwordTable->setFocusPolicy(Qt::NoFocus);
     ui->passwordTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
 
-    connect(ui->passwordTable, &QTableWidget::cellClicked,
-            this, &MainWindow::onPasswordTableCellClicked);
+    connect(ui->passwordTable, &QTableWidget::cellClicked,this, &MainWindow::onPasswordTableCellClicked);
 
 
 
@@ -47,26 +51,16 @@ MainWindow::MainWindow(QWidget *parent)
     QAction *savedAction = new QAction("Saved", this);
     savedAction->setToolTip("View saved passwords");
 
+    QAction *settingAction = new QAction("Setting", this);
+    settingAction->setToolTip("Open application settings");
+
+    QAction *aboutAction = new QAction("About", this);
+    aboutAction->setToolTip("About this application");
+
     toolbar->addAction(generateAction);
     toolbar->addAction(savedAction);
-
-    toolbar->setStyleSheet(R"(
-    QToolBar {
-        background-color: #2c3e50;  /* toolbar background */
-    }
-    QToolBar QToolButton {
-        padding: 5px 10px;
-        border: none;
-        color: white;
-        font-size: 12px;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-    QToolBar QToolButton:hover {
-        background-color: #2c3e52;
-        color: white;
-        border-radius: 6px;
-    }
-)");
+    toolbar->addAction(settingAction);
+    toolbar->addAction(aboutAction);
 
 
 
@@ -81,7 +75,14 @@ MainWindow::MainWindow(QWidget *parent)
     connect(savedAction, &QAction::triggered, this, [=]() {
         ui->stackedWidget->setCurrentWidget(ui->page_saved);
         loadSavedPasswords(); // ⬅️ call to refresh table
+    });
 
+    connect(settingAction, &QAction::triggered, this, [=]() {
+        ui->stackedWidget->setCurrentWidget(ui->page_setting);
+    });
+
+    connect(aboutAction, &QAction::triggered, this, [=]() {
+        ui->stackedWidget->setCurrentWidget(ui->page_about);
     });
 
 
@@ -149,6 +150,24 @@ MainWindow::MainWindow(QWidget *parent)
 
 
     //Styling ko section
+    toolbar->setStyleSheet(R"(
+    QToolBar {
+        background-color: #2c3e50;  /* toolbar background */
+    }
+    QToolBar QToolButton {
+        padding: 5px 10px;
+        border: none;
+        color: white;
+        font-size: 12px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    QToolBar QToolButton:hover {
+        background-color: #2c3e52;
+        color: white;
+        border-radius: 6px;
+    }
+)");
+
     ui->generateBtn->setStyleSheet(R"(
     QPushButton {
         background-color: #3498db;  /* green background */
@@ -176,6 +195,66 @@ MainWindow::MainWindow(QWidget *parent)
     }
     QPushButton:pressed {
         background-color: #1e7e34;  /* even darker when pressed */
+    }
+)");
+
+    ui->cmpBtn->setStyleSheet(R"(
+    QPushButton {
+        background-color: #617190;  /* green background */
+        color: white;               /* white text */
+        border-radius: 12px;
+        padding: 9px 12px;
+    }
+    QPushButton:hover {
+        background-color: #4f5c75;  /* darker green on hover */
+    }
+    QPushButton:pressed {
+        background-color: #2e3645;  /* even darker when pressed */
+    }
+)");
+
+    ui->themebtn->setStyleSheet(R"(
+    QPushButton {
+        background-color: #617190;  /* green background */
+        color: white;               /* white text */
+        border-radius: 12px;
+        padding: 9px 12px;
+    }
+    QPushButton:hover {
+        background-color: #4f5c75;  /* darker green on hover */
+    }
+    QPushButton:pressed {
+        background-color: #2e3645;  /* even darker when pressed */
+    }
+)");
+
+    ui->exportpassBtn->setStyleSheet(R"(
+    QPushButton {
+        background-color: #617190;  /* green background */
+        color: white;               /* white text */
+        border-radius: 12px;
+        padding: 9px 12px;
+    }
+    QPushButton:hover {
+        background-color: #4f5c75;  /* darker green on hover */
+    }
+    QPushButton:pressed {
+        background-color: #2e3645;  /* even darker when pressed */
+    }
+)");
+
+    ui->filelocationBtn->setStyleSheet(R"(
+    QPushButton {
+        background-color: #617190;  /* green background */
+        color: white;               /* white text */
+        border-radius: 12px;
+        padding: 9px 12px;
+    }
+    QPushButton:hover {
+        background-color: #4f5c75;  /* darker green on hover */
+    }
+    QPushButton:pressed {
+        background-color: #2e3645;  /* even darker when pressed */
     }
 )");
 
