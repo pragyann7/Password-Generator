@@ -258,6 +258,21 @@ MainWindow::MainWindow(QWidget *parent)
     }
 )");
 
+    ui->languageBtn->setStyleSheet(R"(
+    QPushButton {
+        background-color: #617190;  /* green background */
+        color: white;               /* white text */
+        border-radius: 12px;
+        padding: 9px 12px;
+    }
+    QPushButton:hover {
+        background-color: #4f5c75;  /* darker green on hover */
+    }
+    QPushButton:pressed {
+        background-color: #2e3645;  /* even darker when pressed */
+    }
+)");
+
 
 }
 

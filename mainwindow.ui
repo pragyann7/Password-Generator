@@ -39,7 +39,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>3</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="page_generate">
      <widget class="QLabel" name="Title">
@@ -309,7 +309,7 @@ padding: 6px 12px</string>
         <x>70</x>
         <y>120</y>
         <width>251</width>
-        <height>221</height>
+        <height>251</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
@@ -338,6 +338,13 @@ padding: 6px 12px</string>
         <widget class="QPushButton" name="filelocationBtn">
          <property name="text">
           <string>File Location</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="languageBtn">
+         <property name="text">
+          <string>Language</string>
          </property>
         </widget>
        </item>
