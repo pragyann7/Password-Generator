@@ -11,7 +11,172 @@
 #include <QFile>
 #include <QTextStream>
 #include <QDir>
-#include <qtimer.h>
+#include <QTimer>
+#include <QInputDialog>
+#include <QCryptographicHash>
+#include <QFile>
+#include <QTextStream>
+#include <QStandardPaths>
+#include <QDir>
+#include <QRandomGenerator>
+#include <QMessageBox>
+#include <QByteArray>
+#include <QDebug>
+#include <QBuffer>
+
+#include <openssl/evp.h>
+#include <openssl/rand.h>
+#include "crypto_utils.h"
+
+
+
+// Constants
+const int SALT_SIZE = 16;
+const int IV_SIZE = 16;
+const int KEY_SIZE = 32;  // AES-256
+const int PBKDF2_ITERATIONS = 100000;
+
+//Encryption section
+QByteArray generateRandomBytes(int length) {
+    QByteArray bytes;
+    for (int i = 0; i < length; ++i) {
+        bytes.append(static_cast<char>(QRandomGenerator::system()->generate() & 0xFF));
+    }
+    return bytes;
+}
+
+bool deriveKeyFromPassword(const QString &crypto, const QByteArray &salt, QByteArray &keyOut) {
+    keyOut.resize(KEY_SIZE);
+    int result = PKCS5_PBKDF2_HMAC(crypto.toUtf8().data(),
+                                   crypto.toUtf8().size(),
+                                   reinterpret_cast<const unsigned char*>(salt.constData()),
+                                   salt.size(),
+                                   PBKDF2_ITERATIONS,
+                                   EVP_sha256(),
+                                   KEY_SIZE,
+                                   reinterpret_cast<unsigned char*>(keyOut.data()));
+    return result == 1;
+}
+
+bool encryptPassword(const QString &plainText, const QByteArray &key, const QByteArray &iv, QByteArray &cipherOut) {
+    EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
+    if (!ctx) return false;
+
+    int len;
+    int ciphertext_len;
+    QByteArray ciphertext;
+    ciphertext.resize(plainText.toUtf8().size() + EVP_MAX_BLOCK_LENGTH);
+
+    if (1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), nullptr,
+                                reinterpret_cast<const unsigned char*>(key.constData()),
+                                reinterpret_cast<const unsigned char*>(iv.constData()))) {
+        EVP_CIPHER_CTX_free(ctx);
+        return false;
+    }
+
+    if (1 != EVP_EncryptUpdate(ctx,
+                               reinterpret_cast<unsigned char*>(ciphertext.data()), &len,
+                               reinterpret_cast<const unsigned char*>(plainText.toUtf8().constData()),
+                               plainText.toUtf8().size())) {
+        EVP_CIPHER_CTX_free(ctx);
+        return false;
+    }
+
+    ciphertext_len = len;
+
+    if (1 != EVP_EncryptFinal_ex(ctx,
+                                 reinterpret_cast<unsigned char*>(ciphertext.data() + len), &len)) {
+        EVP_CIPHER_CTX_free(ctx);
+        return false;
+    }
+
+    ciphertext_len += len;
+    cipherOut = ciphertext.left(ciphertext_len);
+
+    EVP_CIPHER_CTX_free(ctx);
+    return true;
+}
+
+bool saveEncryptedPasswordToFile(const QString &name, const QString &password, const QString &crypto) {
+    // Generate salt and IV
+
+    QByteArray salt = generateRandomBytes(SALT_SIZE);
+    QByteArray iv = generateRandomBytes(IV_SIZE);
+
+    QByteArray key;
+
+    if (!deriveKeyFromPassword(crypto, salt, key)) {
+        return false;
+    }
+
+    QByteArray cipherText;
+    if (!encryptPassword(password, key, iv, cipherText)) {
+        return false;
+    }
+
+    // Save to secure location
+    QString folderPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    QDir dir(folderPath);
+    if (!dir.exists()) dir.mkpath(".");
+
+    QString filePath = dir.filePath("passwords.txt");
+    QFile file(filePath);
+
+    if (!file.open(QIODevice::Append | QIODevice::Text)) {
+        return false;
+    }
+
+    QTextStream out(&file);
+    out << name << ":"
+        << salt.toBase64() << ":"
+        << iv.toBase64() << ":"
+        << cipherText.toBase64() << "\n";
+
+    file.close();
+    return true;
+}
+
+//Decryption section
+bool decryptPassword(const QByteArray &cipherText, const QByteArray &key, const QByteArray &iv, QString &plainTextOut) {
+    EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
+    if (!ctx) return false;
+
+    int len;
+    int plaintext_len;
+    QByteArray plaintext;
+    plaintext.resize(cipherText.size()); // ciphertext size is max size of plaintext
+
+    if (1 != EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), nullptr,
+                                reinterpret_cast<const unsigned char*>(key.constData()),
+                                reinterpret_cast<const unsigned char*>(iv.constData()))) {
+        EVP_CIPHER_CTX_free(ctx);
+        return false;
+    }
+
+    if (1 != EVP_DecryptUpdate(ctx,
+                               reinterpret_cast<unsigned char*>(plaintext.data()), &len,
+                               reinterpret_cast<const unsigned char*>(cipherText.constData()),
+                               cipherText.size())) {
+        EVP_CIPHER_CTX_free(ctx);
+        return false;
+    }
+
+    plaintext_len = len;
+
+    if (1 != EVP_DecryptFinal_ex(ctx,
+                                 reinterpret_cast<unsigned char*>(plaintext.data() + len), &len)) {
+        EVP_CIPHER_CTX_free(ctx);
+        return false;
+    }
+
+    plaintext_len += len;
+    plaintext.resize(plaintext_len);
+    plainTextOut = QString::fromUtf8(plaintext);
+
+    EVP_CIPHER_CTX_free(ctx);
+    return true;
+}
+
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -21,6 +186,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     ui->errorLabel->hide();
     ui->stackedWidget->setCurrentWidget(ui->page_generate);
+    ui->passwordTable->setColumnCount(2);
+
 
     QLabel *versionLabel = new QLabel("Version 1.0.0", this);
         QFont font = versionLabel->font();
@@ -31,6 +198,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 
     ui->passwordTable->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    ui->passwordTable->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ui->passwordTable->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
     ui->passwordTable->setSelectionMode(QAbstractItemView::NoSelection);
     ui->passwordTable->setFocusPolicy(Qt::NoFocus);
@@ -39,6 +207,23 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->passwordTable, &QTableWidget::cellClicked,this, &MainWindow::onPasswordTableCellClicked);
 
+
+    // Only store if file doesn't exist (first-time setup)
+    QFile file(getMasterPasswordHashFilePath());
+    if (!file.exists()) {
+        bool ok;
+        QString newPassword = QInputDialog::getText(
+            this, tr("Setup Master Password"), tr("Create a Master Password:"),
+            QLineEdit::Password, "", &ok);
+
+        if (ok && !newPassword.isEmpty()) {
+            saveMasterPasswordHash(newPassword);
+            QMessageBox::information(this, "Success", "Master password saved.");
+        } else {
+            QMessageBox::critical(this, "Error", "Master password setup cancelled.");
+            QCoreApplication::exit(1); // Exit if user cancels setup
+        }
+    }
 
 
     QToolBar *toolbar = new QToolBar("Navigation", this);
@@ -73,9 +258,27 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     connect(savedAction, &QAction::triggered, this, [=]() {
-        ui->stackedWidget->setCurrentWidget(ui->page_saved);
-        loadSavedPasswords(); // ⬅️ call to refresh table
+        bool ok;
+        QString inputPassword = QInputDialog::getText(
+            this, "Authentication Required",
+            "Enter Master Password:",
+            QLineEdit::Password, "", &ok);
+
+        if (!ok || inputPassword.isEmpty()) return;
+
+        if (!verifyMasterPassword(inputPassword)) {
+            QMessageBox::critical(this, "Access Denied", "Incorrect Master Password.");
+            return;
+        }
+
+        if (ui->page_saved) {
+            ui->stackedWidget->setCurrentWidget(ui->page_saved);
+            loadSavedPasswords(cryptoKey); // uses static cryptoKey
+        }
     });
+
+
+
 
     connect(settingAction, &QAction::triggered, this, [=]() {
         ui->stackedWidget->setCurrentWidget(ui->page_setting);
@@ -159,7 +362,6 @@ MainWindow::MainWindow(QWidget *parent)
         border: none;
         color: white;
         font-size: 12px;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
     QToolBar QToolButton:hover {
         background-color: #2c3e52;
@@ -258,7 +460,7 @@ MainWindow::MainWindow(QWidget *parent)
     }
 )");
 
-    ui->languageBtn->setStyleSheet(R"(
+    ui->forgetpassBtn->setStyleSheet(R"(
     QPushButton {
         background-color: #617190;  /* green background */
         color: white;               /* white text */
@@ -281,6 +483,10 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+
+
+//Functions
+
 void MainWindow::savePasswordToFile(const QString &name, const QString &password)
 {
     QString filePath = QDir::homePath() + "/passwords.txt";
@@ -302,7 +508,6 @@ void MainWindow::savePasswordToFile(const QString &name, const QString &password
 void MainWindow::on_saveButton_clicked()
 {
     QString password = ui->passwordOutput->text();
-    qDebug() << "Password text:" << password;
     if (password.isEmpty()) {
         QMessageBox::warning(this, tr("Invalid input"), tr("Password cannot be empty."));
         return;
@@ -311,7 +516,6 @@ void MainWindow::on_saveButton_clicked()
     bool ok = false;
     QString name;
 
-    // Instead of direct call to QInputDialog::getText, create a dialog object explicitly
     QInputDialog inputDialog(this);
     inputDialog.setWindowTitle(tr("Save Password"));
     inputDialog.setLabelText(tr("Enter a name for your password:"));
@@ -324,48 +528,86 @@ void MainWindow::on_saveButton_clicked()
         ok = true;
     }
 
-    if (ok && !name.isEmpty()) {
-        savePasswordToFile(name, password);
-        QMessageBox::information(this, tr("Saved"), tr("Password \"%1\" saved as \"%2\".").arg(password, name));
-    } else if (ok) {
+    if (!ok || name.isEmpty()) {
         QMessageBox::warning(this, tr("Invalid input"), tr("Please enter a valid name."));
+        return;
+    }
+
+    QString enteredPassword = QInputDialog::getText(this, "Master Password", "Enter master password:", QLineEdit::Password);
+    if (enteredPassword.isEmpty()) {
+        QMessageBox::warning(this, "Cancelled", "Master password is required to encrypt.");
+        return;
+    }
+
+    if(verifyMasterPassword(enteredPassword)){
+
+        if (saveEncryptedPasswordToFile(name, password, cryptoKey)) {
+            QMessageBox::information(this, tr("Saved"), tr("Encrypted password saved as \"%1\".").arg(name));
+        } else {
+            QMessageBox::critical(this, tr("Error"), tr("Failed to save encrypted password."));
+        }
+    }
+    else{
+        QMessageBox::warning(this, "Invalid input", "Incorrect Password!");
+        return;
     }
 }
 
-void MainWindow::loadSavedPasswords()
+void MainWindow::loadSavedPasswords(const QString &cryptoKey)
 {
-    QString filePath = QDir::homePath() + "/passwords.txt";
+    QString folderPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    QDir dir(folderPath);
+    QString filePath = dir.filePath("passwords.txt");
+
     QFile file(filePath);
-
-    ui->passwordTable->setRowCount(0); // Clear existing data
-
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        return; // No file, nothing to load
+        QMessageBox::warning(this, tr("Error"), tr("Could not open saved passwords file."));
+        return;
     }
 
+    ui->passwordTable->clear();
+    ui->passwordTable->setRowCount(0);
+    ui->passwordTable->setColumnCount(2);
+    ui->passwordTable->setHorizontalHeaderLabels(QStringList() << tr("Name") << tr("Password"));
+
     QTextStream in(&file);
-    int row = 0;
-
     while (!in.atEnd()) {
-        QString line = in.readLine().trimmed();
-        if (line.isEmpty() || !line.contains(":"))
+        QString line = in.readLine();
+        if (line.isEmpty()) continue;
+
+        QStringList parts = line.split(':');
+        if (parts.size() != 4) continue;
+
+        QString name = parts[0];
+        QByteArray salt = QByteArray::fromBase64(parts[1].toUtf8());
+        QByteArray iv = QByteArray::fromBase64(parts[2].toUtf8());
+        QByteArray cipherText = QByteArray::fromBase64(parts[3].toUtf8());
+
+        // Derive key from static cryptoKey
+        QByteArray key;
+        if (!deriveKeyFromPassword(cryptoKey, salt, key)) {
+            QMessageBox::warning(this, tr("Error"), tr("Failed to derive key."));
             continue;
+        }
 
-        QStringList parts = line.split(":");
-        if (parts.size() != 2)
-            continue;
+        QString decryptedPassword;
+        if (!decryptPassword(cipherText, key, iv, decryptedPassword)) {
+            decryptedPassword = tr("<Decryption Failed>");
+        }
 
-        QString name = parts[0].trimmed();
-        QString password = parts[1].trimmed();
-
+        int row = ui->passwordTable->rowCount();
         ui->passwordTable->insertRow(row);
         ui->passwordTable->setItem(row, 0, new QTableWidgetItem(name));
-        ui->passwordTable->setItem(row, 1, new QTableWidgetItem(password));
-        row++;
+        ui->passwordTable->setItem(row, 1, new QTableWidgetItem(decryptedPassword));
     }
 
     file.close();
 }
+
+
+
+
+
 
 void MainWindow::onPasswordTableCellClicked(int row, int column)
 {
@@ -382,3 +624,28 @@ void MainWindow::onPasswordTableCellClicked(int row, int column)
         ui->passwordTable->item(row, column)->setText(originalPassword);
     });
 }
+
+void MainWindow::on_cmpBtn_clicked()
+{
+    bool ok;
+    QString enteredPassword = QInputDialog::getText(
+        this,
+        tr("Authentication Required"),
+        tr("Enter Master Password:"),
+        QLineEdit::Password,
+        "",
+        &ok
+        );
+
+    if(!ok){
+        return;
+    }
+
+    if (verifyMasterPassword(enteredPassword)) {
+            ui->stackedWidget->setCurrentWidget(ui->page_resetPassword);
+
+    } else {
+        QMessageBox::warning(this, tr("Access Denied"), tr("Incorrect password."));
+    }
+}
+

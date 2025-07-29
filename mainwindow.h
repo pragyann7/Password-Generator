@@ -20,11 +20,16 @@ private slots:
     void onPasswordTableCellClicked(int row, int column);
 
 
+    void on_cmpBtn_clicked();
+
 private:
     Ui::MainWindow *ui;
 
     void savePasswordToFile(const QString &name, const QString &password);
-    void loadSavedPasswords();
+    void loadSavedPasswords(const QString &cryptoKey);
+
+    QString cryptoKey = "123";
+    QString masterPassword = "qwe";
 
 };
 

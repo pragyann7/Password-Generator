@@ -9,14 +9,20 @@ CONFIG += c++17
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    crypto_utils.cpp \
     main.cpp \
     mainwindow.cpp
 
 HEADERS += \
+    crypto_utils.h \
     mainwindow.h
 
 FORMS += \
     mainwindow.ui
+
+INCLUDEPATH += /opt/homebrew/opt/openssl@3/include
+LIBS += -L/opt/homebrew/opt/openssl/lib -lssl -lcrypto
+
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
