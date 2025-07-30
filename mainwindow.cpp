@@ -184,6 +184,10 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    setupAboutPage();
+
+
     ui->errorLabel->hide();
     ui->passwordTable->setColumnCount(2);
 
@@ -202,6 +206,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->passwordTable->setSelectionMode(QAbstractItemView::NoSelection);
     ui->passwordTable->setFocusPolicy(Qt::NoFocus);
     ui->passwordTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+    ui->aboutTextEdit->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
 
     connect(ui->passwordTable, &QTableWidget::cellClicked,this, &MainWindow::onPasswordTableCellClicked);
@@ -248,6 +254,9 @@ MainWindow::MainWindow(QWidget *parent)
     // Connect to page switching
     connect(generateAction, &QAction::triggered, this, [=]() {
         ui->stackedWidget->setCurrentWidget(ui->page_generate);
+        ui->currentpassField->clear();
+        ui->newpassField->clear();
+        ui->verifypassField->clear();
     });
 
     connect(savedAction, &QAction::triggered, this, [=]() {
@@ -423,36 +432,6 @@ MainWindow::MainWindow(QWidget *parent)
     }
 )");
 
-    ui->exportpassBtn->setStyleSheet(R"(
-    QPushButton {
-        background-color: #617190;
-        color: white;
-        border-radius: 12px;
-        padding: 9px 12px;
-    }
-    QPushButton:hover {
-        background-color: #4f5c75;
-    }
-    QPushButton:pressed {
-        background-color: #2e3645;
-    }
-)");
-
-    ui->filelocationBtn->setStyleSheet(R"(
-    QPushButton {
-        background-color: #617190;
-        color: white;
-        border-radius: 12px;
-        padding: 9px 12px;
-    }
-    QPushButton:hover {
-        background-color: #4f5c75;
-    }
-    QPushButton:pressed {
-        background-color: #2e3645;
-    }
-)");
-
     ui->forgetpassBtn->setStyleSheet(R"(
     QPushButton {
         background-color: #617190;
@@ -484,6 +463,52 @@ MainWindow::MainWindow(QWidget *parent)
 )");
 
 
+    ui->changepassBtn->setStyleSheet(R"(
+    QPushButton {
+        background-color: #617190;
+        color: white;
+        border-radius: 12px;
+        padding: 9px 12px;
+    }
+    QPushButton:hover {
+        background-color: #4f5c75;
+    }
+    QPushButton:pressed {
+        background-color: #2e3645;
+    }
+)");
+
+
+    ui->answersubmitBtn->setStyleSheet(R"(
+    QPushButton {
+        background-color: #617190;
+        color: white;
+        border-radius: 12px;
+        padding: 9px 12px;
+    }
+    QPushButton:hover {
+        background-color: #4f5c75;
+    }
+    QPushButton:pressed {
+        background-color: #2e3645;
+    }
+)");
+
+    ui->forgotsubmitBtn->setStyleSheet(R"(
+    QPushButton {
+        background-color: #617190;
+        color: white;
+        border-radius: 12px;
+        padding: 9px 12px;
+    }
+    QPushButton:hover {
+        background-color: #4f5c75;
+    }
+    QPushButton:pressed {
+        background-color: #2e3645;
+    }
+)");
+
 }
 
 MainWindow::~MainWindow()
@@ -502,7 +527,7 @@ void MainWindow::savePasswordToFile(const QString &name, const QString &password
     QFile file(filePath);
 
     if (!file.open(QIODevice::Append | QIODevice::Text)) {
-        QMessageBox::warning(this, tr("Error"), tr("Could not open file to save password."));
+        QMessageBox::critical(this, tr("Error"), tr("Could not open file to save password."));
         return;
     }
 
@@ -517,7 +542,7 @@ void MainWindow::on_saveButton_clicked()
 {
     QString password = ui->passwordOutput->text();
     if (password.isEmpty()) {
-        QMessageBox::warning(this, tr("Invalid input"), tr("Password cannot be empty."));
+        QMessageBox::critical(this, tr("Invalid input"), tr("Password cannot be empty."));
         return;
     }
 
@@ -537,13 +562,13 @@ void MainWindow::on_saveButton_clicked()
     }
 
     if (!ok || name.isEmpty()) {
-        QMessageBox::warning(this, tr("Invalid input"), tr("Please enter a valid name."));
+        QMessageBox::critical(this, tr("Invalid input"), tr("Please enter a valid name."));
         return;
     }
 
     QString enteredPassword = QInputDialog::getText(this, "Master Password", "Enter master password:", QLineEdit::Password);
     if (enteredPassword.isEmpty()) {
-        QMessageBox::warning(this, "Cancelled", "Master password is required to encrypt.");
+        QMessageBox::critical(this, "Cancelled", "Master password is required to encrypt.");
         return;
     }
 
@@ -556,7 +581,7 @@ void MainWindow::on_saveButton_clicked()
         }
     }
     else{
-        QMessageBox::warning(this, "Invalid input", "Incorrect Password!");
+        QMessageBox::critical(this, "Invalid input", "Incorrect Password!");
         return;
     }
 }
@@ -569,7 +594,7 @@ void MainWindow::loadSavedPasswords(const QString &cryptoKey)
 
     QFile file(filePath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QMessageBox::warning(this, tr("Error"), tr("Could not open saved passwords file."));
+        QMessageBox::critical(this, tr("Error"), tr("Could not open saved passwords file."));
         return;
     }
 
@@ -594,7 +619,7 @@ void MainWindow::loadSavedPasswords(const QString &cryptoKey)
         // Derive key from static cryptoKey
         QByteArray key;
         if (!deriveKeyFromPassword(cryptoKey, salt, key)) {
-            QMessageBox::warning(this, tr("Error"), tr("Failed to derive key."));
+            QMessageBox::critical(this, tr("Error"), tr("Failed to derive key."));
             continue;
         }
 
@@ -611,8 +636,6 @@ void MainWindow::loadSavedPasswords(const QString &cryptoKey)
 
     file.close();
 }
-
-
 
 
 
@@ -635,26 +658,8 @@ void MainWindow::onPasswordTableCellClicked(int row, int column)
 
 void MainWindow::on_cmpBtn_clicked()
 {
-    bool ok;
-    QString enteredPassword = QInputDialog::getText(
-        this,
-        tr("Authentication Required"),
-        tr("Enter Master Password:"),
-        QLineEdit::Password,
-        "",
-        &ok
-        );
-
-    if(!ok){
-        return;
-    }
-
-    if (verifyMasterPassword(enteredPassword)) {
-            ui->stackedWidget->setCurrentWidget(ui->page_resetPassword);
-
-    } else {
-        QMessageBox::warning(this, tr("Access Denied"), tr("Incorrect password."));
-    }
+    clearAllInputFields();
+    ui->stackedWidget->setCurrentWidget(ui->page_resetPassword);
 }
 
 
@@ -666,13 +671,13 @@ void MainWindow::on_passsubmitBtn_clicked()
 
     // Validate input
     if (masterPassword.isEmpty() || answer1.isEmpty() || answer2.isEmpty()) {
-        QMessageBox::warning(this, "Input Required", "All fields are required.");
+        QMessageBox::critical(this, "Input Required", "All fields are required.");
         return;
     }
 
     QStringList answers = { answer1, answer2 };
 
-    if (saveMasterPasswordHash(masterPassword, answers)) {
+    if (storeMasterPasswordAndSecurityAnswers(masterPassword, answers)) {
         QMessageBox::information(this, "Success", "Master password and security answers saved.");
         toolbar->show();
         ui->stackedWidget->setCurrentWidget(ui->page_generate);  // Go to main page after setup
@@ -681,3 +686,124 @@ void MainWindow::on_passsubmitBtn_clicked()
     }
 }
 
+
+void MainWindow::on_changepassBtn_clicked()
+{
+    QString oldpass = ui->currentpassField->text();
+    QString newpass = ui->newpassField->text();
+    QString verifypass = ui->verifypassField->text();
+
+    if (oldpass.isEmpty() || newpass.isEmpty() || verifypass.isEmpty()) {
+        QMessageBox::critical(this, "Input Required", "All fields are required.");
+        return;
+    }
+    else if(newpass != verifypass){
+        QMessageBox::critical(this, "Error", "Password does not match.");
+        return;
+    }
+
+    if(!verifyMasterPassword(oldpass)){
+        QMessageBox::critical(this, "Error", "Current password is incorrect.");
+        return;
+    }
+
+    pendingNewMasterPassword = newpass;
+
+    ui->stackedWidget->setCurrentWidget(ui->page_securityQ);
+}
+
+
+void MainWindow::on_answersubmitBtn_clicked()
+{
+    QString answer1 = ui->resetanswer1Field->text();
+    QString answer2 = ui->resetanswer2Field->text();
+
+    QStringList answers = {answer1, answer2};
+
+    if(answer1.isEmpty() || answer2.isEmpty()){
+        QMessageBox::critical(this, "Error", "All security questions must be answered.");
+        return;
+    }
+
+    if(storeMasterPasswordAndSecurityAnswers(pendingNewMasterPassword, answers)){
+        QMessageBox::information(this, "Success", "Master password and Security answers updated.");
+        ui->stackedWidget->setCurrentWidget(ui->page_generate);
+    }
+    else{
+        QMessageBox::critical(this, "Error", "Failed to update.");
+    }
+    pendingNewMasterPassword.clear();
+}
+
+void MainWindow::on_forgetpassBtn_clicked()
+{
+    ui->forgotpass1Field->clear();
+    ui->forgotpass2Field->clear();
+    ui->masterpassField->clear();
+    ui->answer1Field->clear();
+    ui->answer2Field->clear();
+    ui->stackedWidget->setCurrentWidget(ui->page_forgotpass);
+}
+
+
+void MainWindow::on_forgotsubmitBtn_clicked()
+{
+    QString answer1 = ui->forgotpass1Field->text();
+    QString answer2 = ui->forgotpass2Field->text();
+
+    QStringList answers = {answer1, answer2};
+
+    if(verifySecurityAnswers(answers)){
+        ui->stackedWidget->setCurrentWidget(ui->page_setup_password);
+    }
+    else{
+        QMessageBox::critical(this, "Invalid", "Security answers are incorrect.");
+    }
+
+}
+
+void MainWindow::clearAllInputFields() {
+    ui->currentpassField->clear();
+    ui->newpassField->clear();
+    ui->verifypassField->clear();
+    ui->resetanswer1Field->clear();
+    ui->resetanswer2Field->clear();
+}
+
+
+void MainWindow::setupAboutPage() {
+    QString aboutContent = R"(
+**About Password Manager**
+
+Password Manager is a lightweight and secure desktop application designed to help you generate, store, and manage your passwords efficiently.
+
+**Key Features**
+- Strong Password Generator
+- AES-256 Encrypted Local Password Storage
+- Secure Master Password with SHA-256
+- Recovery via Security Questions
+- Light/Dark Mode Switching
+
+**Tech Used**
+- Qt (C++)
+- QCryptographicHash
+- QStandardPaths, QFile
+
+**Security Highlights**
+- Master Password & Answers are SHA-256 Hashed
+- AES-256 Encryption with Salt + IV
+- No Cloud Storage — Full Local Privacy
+- Safe Recovery via Verified Security Answers
+
+**Developer**
+- Name: Pragyan Shrestha
+- Email: worldtopper@gmail.com
+- Version: 1.0.0
+
+*Disclaimer
+
+This application is intended for personal use. While strong cryptographic techniques are used, always keep backups of your data. The developer is not responsible for any loss of data or unauthorized access due to improper use.
+)";
+
+    ui->aboutTextEdit->setMarkdown(aboutContent);
+}
