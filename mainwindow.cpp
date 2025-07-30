@@ -207,7 +207,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->passwordTable, &QTableWidget::cellClicked,this, &MainWindow::onPasswordTableCellClicked);
 
 
-    QToolBar *toolbar = new QToolBar("Navigation", this);
+    toolbar = new QToolBar("Navigation", this);
     addToolBar(Qt::TopToolBarArea, toolbar);
 
     // Create actions
@@ -674,6 +674,7 @@ void MainWindow::on_passsubmitBtn_clicked()
 
     if (saveMasterPasswordHash(masterPassword, answers)) {
         QMessageBox::information(this, "Success", "Master password and security answers saved.");
+        toolbar->show();
         ui->stackedWidget->setCurrentWidget(ui->page_generate);  // Go to main page after setup
     } else {
         QMessageBox::critical(this, "Error", "Failed to save credentials.");

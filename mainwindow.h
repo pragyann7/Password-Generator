@@ -26,7 +26,7 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-
+    QToolBar *toolbar;
     void savePasswordToFile(const QString &name, const QString &password);
     void loadSavedPasswords(const QString &cryptoKey);
 
