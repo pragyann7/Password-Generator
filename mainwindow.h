@@ -22,6 +22,8 @@ private slots:
 
     void on_cmpBtn_clicked();
 
+    void on_passsubmitBtn_clicked();
+
 private:
     Ui::MainWindow *ui;
 

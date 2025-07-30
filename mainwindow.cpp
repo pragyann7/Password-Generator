@@ -185,7 +185,6 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     ui->errorLabel->hide();
-    ui->stackedWidget->setCurrentWidget(ui->page_generate);
     ui->passwordTable->setColumnCount(2);
 
 
@@ -206,24 +205,6 @@ MainWindow::MainWindow(QWidget *parent)
 
 
     connect(ui->passwordTable, &QTableWidget::cellClicked,this, &MainWindow::onPasswordTableCellClicked);
-
-
-    // Only store if file doesn't exist (first-time setup)
-    QFile file(getMasterPasswordHashFilePath());
-    if (!file.exists()) {
-        bool ok;
-        QString newPassword = QInputDialog::getText(
-            this, tr("Setup Master Password"), tr("Create a Master Password:"),
-            QLineEdit::Password, "", &ok);
-
-        if (ok && !newPassword.isEmpty()) {
-            saveMasterPasswordHash(newPassword);
-            QMessageBox::information(this, "Success", "Master password saved.");
-        } else {
-            QMessageBox::critical(this, "Error", "Master password setup cancelled.");
-            QCoreApplication::exit(1); // Exit if user cancels setup
-        }
-    }
 
 
     QToolBar *toolbar = new QToolBar("Navigation", this);
@@ -251,6 +232,18 @@ MainWindow::MainWindow(QWidget *parent)
 
     toolbar->setMovable(false);
     toolbar->setFloatable(false);
+
+    // Only store if file doesn't exist (first-time setup)
+    QFile file(getMasterPasswordHashFilePath());
+    if (!file.exists()) {
+        toolbar->hide();
+        ui->stackedWidget->setCurrentWidget(ui->page_setup_password);
+    }
+    else{
+        toolbar->show();
+        ui->stackedWidget->setCurrentWidget(ui->page_generate);
+
+    }
 
     // Connect to page switching
     connect(generateAction, &QAction::triggered, this, [=]() {
@@ -355,7 +348,7 @@ MainWindow::MainWindow(QWidget *parent)
     //Styling ko section
     toolbar->setStyleSheet(R"(
     QToolBar {
-        background-color: #2c3e50;  /* toolbar background */
+        background-color: #2c3e50;
     }
     QToolBar QToolButton {
         padding: 5px 10px;
@@ -372,106 +365,121 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->generateBtn->setStyleSheet(R"(
     QPushButton {
-        background-color: #3498db;  /* green background */
-        color: white;               /* white text */
+        background-color: #3498db;
+        color: white;
         border-radius: 12px;
         padding: 6px 12px;
     }
     QPushButton:hover {
-        background-color: #2980b9;  /* darker green on hover */
+        background-color: #2980b9;
     }
     QPushButton:pressed {
-        background-color: #1f618d;  /* even darker when pressed */
+        background-color: #1f618d;
     }
 )");
 
     ui->saveButton->setStyleSheet(R"(
     QPushButton {
-        background-color: #28a745;  /* green background */
-        color: white;               /* white text */
+        background-color: #28a745;
+        color: white;
         border-radius: 12px;
         padding: 6px 12px;
     }
     QPushButton:hover {
-        background-color: #218838;  /* darker green on hover */
+        background-color: #218838;
     }
     QPushButton:pressed {
-        background-color: #1e7e34;  /* even darker when pressed */
+        background-color: #1e7e34;
     }
 )");
 
     ui->cmpBtn->setStyleSheet(R"(
     QPushButton {
-        background-color: #617190;  /* green background */
-        color: white;               /* white text */
+        background-color: #617190;
+        color: white;
         border-radius: 12px;
         padding: 9px 12px;
     }
     QPushButton:hover {
-        background-color: #4f5c75;  /* darker green on hover */
+        background-color: #4f5c75;
     }
     QPushButton:pressed {
-        background-color: #2e3645;  /* even darker when pressed */
+        background-color: #2e3645;
     }
 )");
 
     ui->themebtn->setStyleSheet(R"(
     QPushButton {
-        background-color: #617190;  /* green background */
-        color: white;               /* white text */
+        background-color: #617190;
+        color: white;
         border-radius: 12px;
         padding: 9px 12px;
     }
     QPushButton:hover {
-        background-color: #4f5c75;  /* darker green on hover */
+        background-color: #4f5c75;
     }
     QPushButton:pressed {
-        background-color: #2e3645;  /* even darker when pressed */
+        background-color: #2e3645;
     }
 )");
 
     ui->exportpassBtn->setStyleSheet(R"(
     QPushButton {
-        background-color: #617190;  /* green background */
-        color: white;               /* white text */
+        background-color: #617190;
+        color: white;
         border-radius: 12px;
         padding: 9px 12px;
     }
     QPushButton:hover {
-        background-color: #4f5c75;  /* darker green on hover */
+        background-color: #4f5c75;
     }
     QPushButton:pressed {
-        background-color: #2e3645;  /* even darker when pressed */
+        background-color: #2e3645;
     }
 )");
 
     ui->filelocationBtn->setStyleSheet(R"(
     QPushButton {
-        background-color: #617190;  /* green background */
-        color: white;               /* white text */
+        background-color: #617190;
+        color: white;
         border-radius: 12px;
         padding: 9px 12px;
     }
     QPushButton:hover {
-        background-color: #4f5c75;  /* darker green on hover */
+        background-color: #4f5c75;
     }
     QPushButton:pressed {
-        background-color: #2e3645;  /* even darker when pressed */
+        background-color: #2e3645;
     }
 )");
 
     ui->forgetpassBtn->setStyleSheet(R"(
     QPushButton {
-        background-color: #617190;  /* green background */
-        color: white;               /* white text */
+        background-color: #617190;
+        color: white;
         border-radius: 12px;
         padding: 9px 12px;
     }
     QPushButton:hover {
-        background-color: #4f5c75;  /* darker green on hover */
+        background-color: #4f5c75;
     }
     QPushButton:pressed {
-        background-color: #2e3645;  /* even darker when pressed */
+        background-color: #2e3645;
+    }
+)");
+
+    ui->passsubmitBtn->setStyleSheet(R"(
+    QPushButton {
+        background-color: #617190;
+        color: white;
+        border-radius: 12px;
+        padding: 9px 12px;
+    }
+    QPushButton:hover {
+        background-color: #4f5c75;
+    }
+    QPushButton:pressed {
+        background-color: #2e3645;
     }
 )");
 
@@ -646,6 +654,29 @@ void MainWindow::on_cmpBtn_clicked()
 
     } else {
         QMessageBox::warning(this, tr("Access Denied"), tr("Incorrect password."));
+    }
+}
+
+
+void MainWindow::on_passsubmitBtn_clicked()
+{
+    QString masterPassword = ui->masterpassField->text().trimmed();
+    QString answer1 = ui->answer1Field->text().trimmed();
+    QString answer2 = ui->answer2Field->text().trimmed();
+
+    // Validate input
+    if (masterPassword.isEmpty() || answer1.isEmpty() || answer2.isEmpty()) {
+        QMessageBox::warning(this, "Input Required", "All fields are required.");
+        return;
+    }
+
+    QStringList answers = { answer1, answer2 };
+
+    if (saveMasterPasswordHash(masterPassword, answers)) {
+        QMessageBox::information(this, "Success", "Master password and security answers saved.");
+        ui->stackedWidget->setCurrentWidget(ui->page_generate);  // Go to main page after setup
+    } else {
+        QMessageBox::critical(this, "Error", "Failed to save credentials.");
     }
 }
 

@@ -4,9 +4,9 @@
 #include <QString>
 #include <QByteArray>
 
-bool saveMasterPasswordHash(const QString &masterPassword);
+bool saveMasterPasswordHash(const QString &masterPassword, const QStringList &securityAnswers);
 bool verifyMasterPassword(const QString &inputPassword);
-QString getMasterPasswordHashFilePath(); // 👈 THIS
+QString getMasterPasswordHashFilePath();
 
 
 #endif // CRYPTO_UTILS_H
