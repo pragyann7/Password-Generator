@@ -748,6 +748,11 @@ void MainWindow::on_forgotsubmitBtn_clicked()
 
     QStringList answers = {answer1, answer2};
 
+    if(answer1.isEmpty() || answer2.isEmpty()){
+        QMessageBox::critical(this, "Invalid", "All fields are required.");
+        return;
+    }
+
     if(verifySecurityAnswers(answers)){
         ui->stackedWidget->setCurrentWidget(ui->page_setup_password);
     }
