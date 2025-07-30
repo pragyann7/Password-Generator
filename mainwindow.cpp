@@ -14,12 +14,7 @@
 #include <QTimer>
 #include <QInputDialog>
 #include <QCryptographicHash>
-#include <QFile>
-#include <QTextStream>
 #include <QStandardPaths>
-#include <QDir>
-#include <QRandomGenerator>
-#include <QMessageBox>
 #include <QByteArray>
 #include <QDebug>
 #include <QBuffer>

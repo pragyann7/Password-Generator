@@ -39,21 +39,21 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>2</number>
     </property>
     <widget class="QWidget" name="page_generate">
      <widget class="QLabel" name="Title">
       <property name="geometry">
        <rect>
-        <x>50</x>
-        <y>60</y>
-        <width>294</width>
-        <height>34</height>
+        <x>40</x>
+        <y>20</y>
+        <width>317</width>
+        <height>35</height>
        </rect>
       </property>
       <property name="font">
        <font>
-        <family>Arial</family>
+        <family>Georgia</family>
         <pointsize>30</pointsize>
         <bold>true</bold>
        </font>
@@ -72,7 +72,7 @@
       <property name="geometry">
        <rect>
         <x>53</x>
-        <y>126</y>
+        <y>106</y>
         <width>286</width>
         <height>281</height>
        </rect>
@@ -276,7 +276,7 @@ padding: 6px 12px</string>
       <property name="geometry">
        <rect>
         <x>60</x>
-        <y>110</y>
+        <y>90</y>
         <width>197</width>
         <height>16</height>
        </rect>
@@ -312,15 +312,21 @@ padding: 6px 12px</string>
      <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
-        <x>70</x>
+        <x>60</x>
         <y>120</y>
-        <width>251</width>
+        <width>276</width>
         <height>251</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
         <widget class="QPushButton" name="cmpBtn">
+         <property name="minimumSize">
+          <size>
+           <width>274</width>
+           <height>0</height>
+          </size>
+         </property>
          <property name="cursor">
           <cursorShape>PointingHandCursor</cursorShape>
          </property>
@@ -357,8 +363,8 @@ padding: 6px 12px</string>
       <property name="geometry">
        <rect>
         <x>60</x>
-        <y>140</y>
-        <width>280</width>
+        <y>120</y>
+        <width>271</width>
         <height>221</height>
        </rect>
       </property>
@@ -378,6 +384,18 @@ padding: 6px 12px</string>
        </item>
        <item>
         <widget class="QLineEdit" name="forgotpass1Field">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>274</width>
+           <height>16777215</height>
+          </size>
+         </property>
          <property name="styleSheet">
           <string notr="true">background-color: rgba(162, 158, 161, 166);
 border-radius: 10px;
@@ -390,6 +408,19 @@ padding-bottom: 2px;</string>
           <string>Your answer</string>
          </property>
         </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_8">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>4</height>
+          </size>
+         </property>
+        </spacer>
        </item>
        <item>
         <widget class="QLabel" name="label_17">
@@ -406,6 +437,12 @@ padding-bottom: 2px;</string>
        </item>
        <item>
         <widget class="QLineEdit" name="forgotpass2Field">
+         <property name="maximumSize">
+          <size>
+           <width>274</width>
+           <height>16777215</height>
+          </size>
+         </property>
          <property name="styleSheet">
           <string notr="true">background-color: rgba(162, 158, 161, 166);
 border-radius: 10px;
@@ -427,13 +464,19 @@ padding-bottom: 2px;</string>
          <property name="sizeHint" stdset="0">
           <size>
            <width>20</width>
-           <height>40</height>
+           <height>50</height>
           </size>
          </property>
         </spacer>
        </item>
        <item>
         <widget class="QPushButton" name="forgotsubmitBtn">
+         <property name="maximumSize">
+          <size>
+           <width>274</width>
+           <height>16777215</height>
+          </size>
+         </property>
          <property name="cursor">
           <cursorShape>PointingHandCursor</cursorShape>
          </property>
@@ -487,9 +530,9 @@ padding-bottom: 2px;</string>
      <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
-        <x>100</x>
+        <x>60</x>
         <y>110</y>
-        <width>201</width>
+        <width>276</width>
         <height>261</height>
        </rect>
       </property>
@@ -509,6 +552,12 @@ padding-bottom: 2px;</string>
        </item>
        <item>
         <widget class="QLineEdit" name="currentpassField">
+         <property name="minimumSize">
+          <size>
+           <width>274</width>
+           <height>0</height>
+          </size>
+         </property>
          <property name="styleSheet">
           <string notr="true">background-color: rgba(162, 158, 161, 166);
 border-radius: 10px;
@@ -630,6 +679,12 @@ padding-bottom: 2px;</string>
        </item>
        <item>
         <widget class="QLineEdit" name="resetanswer1Field">
+         <property name="maximumSize">
+          <size>
+           <width>274</width>
+           <height>16777215</height>
+          </size>
+         </property>
          <property name="styleSheet">
           <string notr="true">background-color: rgba(162, 158, 161, 166);
 border-radius: 10px;
@@ -658,6 +713,12 @@ padding-bottom: 2px;</string>
        </item>
        <item>
         <widget class="QLineEdit" name="resetanswer2Field">
+         <property name="maximumSize">
+          <size>
+           <width>274</width>
+           <height>16777215</height>
+          </size>
+         </property>
          <property name="styleSheet">
           <string notr="true">background-color: rgba(162, 158, 161, 166);
 border-radius: 10px;
@@ -686,6 +747,12 @@ padding-bottom: 2px;</string>
        </item>
        <item>
         <widget class="QPushButton" name="answersubmitBtn">
+         <property name="maximumSize">
+          <size>
+           <width>274</width>
+           <height>16777215</height>
+          </size>
+         </property>
          <property name="cursor">
           <cursorShape>PointingHandCursor</cursorShape>
          </property>
@@ -741,7 +808,7 @@ padding-bottom: 2px;</string>
        <rect>
         <x>61</x>
         <y>66</y>
-        <width>280</width>
+        <width>276</width>
         <height>359</height>
        </rect>
       </property>
@@ -761,6 +828,12 @@ padding-bottom: 2px;</string>
        </item>
        <item>
         <widget class="QLineEdit" name="masterpassField">
+         <property name="minimumSize">
+          <size>
+           <width>274</width>
+           <height>0</height>
+          </size>
+         </property>
          <property name="styleSheet">
           <string notr="true">background-color: rgba(162, 158, 161, 166);
 border-radius: 10px;
