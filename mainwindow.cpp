@@ -807,3 +807,12 @@ This application is intended for personal use. While strong cryptographic techni
 
     ui->aboutTextEdit->setMarkdown(aboutContent);
 }
+
+
+
+void MainWindow::on_themebtn_clicked()
+{
+    QMessageBox::critical(this, "Error", "Feature unavailable.");
+
+}
+

@@ -28,6 +28,8 @@ private slots:
     void on_forgotsubmitBtn_clicked();
     void setupAboutPage();
 
+    void on_themebtn_clicked();
+
 private:
     Ui::MainWindow *ui;
     QToolBar *toolbar;
